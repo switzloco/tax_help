@@ -1,0 +1,29 @@
+# Prevent leaking PII (Personally Identifiable Information)
+/raw_docs/*
+/processed_data/*
+/final_outputs/
+*.pdf
+*.csv
+*.jpg
+*.json
+
+# Allow agents directory and markdown files
+!/.agents/
+!/**/*.md
+
+# Ignore candidates from multi-run audits (contain PII)
+/final_outputs/candidates/
+
+# Allow impact logs (sanitized, zero PII)
+!/run_log/
+!/run_log/*.jsonl
+
+# Standard environment / dependency ignores
+node_modules/
+.venv/
+venv/
+.uv/
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db

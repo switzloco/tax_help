@@ -1,0 +1,23 @@
+Sample interaction –
+Me: Through site or telling Antigravity to run – “Here’s my tax doc list, I want to get file for 2026”
+App / Agent team: “Thanks I’ll look into it.” <begin core loop>
+•	Gathers all the docs
+•	CRUCIAL – Looks at previous year’s filings if included – it’s good to ask for this
+•	Developments plan of what’s necessary and probably unnecessary using last year docs
+•	Compares actual docs on file to pre-determined checklist of what’s necessary
+•	Considers multiple strategies based on data in docs
+•	Fills out proxy forms (JSON?) <- save actual PDF filling until everything is finished
+•	QA agent looks for major mistakes
+•	Savings agent makes sure we are taking the most advantage
+•	Highlights a path forward to a successful filing with the user
+o	Which docs are still required
+o	Any key questions that could lead to savings
+o	Pathway / readiness to file
+•	Human comms agent relays the status 
+App/Agent Team: “Here are the remaining docs I need to get you ready to file”  and “Answer these questions.”
+Me/User: Responds
+Loops through including QA review until plan is met and we can move forward…
+App/Agent Team: You are ready to file! Iv’e prepped these docs for your CPA to review. 
+
+
+We want it to finish in less than 4 hours (it’ll probably take less than 20 minutes per run but giving a wide birth in case that takes time pressure off of assessments). Is this reasonable? Lots of agents acting in serial here. Let’s be careful about their context windows. 

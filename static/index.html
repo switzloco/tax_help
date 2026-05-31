@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Prep Hub - Local Intelligent Planning Assistant</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-base: #0b0f19;
+            --bg-card: rgba(20, 28, 47, 0.7);
+            --bg-card-hover: rgba(30, 41, 69, 0.8);
+            --border-glow: rgba(99, 102, 241, 0.15);
+            --border-glow-active: rgba(99, 102, 241, 0.4);
+            
+            --color-primary: #6366f1;
+            --color-primary-hover: #4f46e5;
+            --color-accent: #a855f7;
+            
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+            --color-info: #3b82f6;
+            
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dark: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-icon {
+            width: 2.25rem;
+            height: 2.25rem;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.25rem;
+            -webkit-text-fill-color: white;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.25rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-btn.active {
+            color: var(--text-main);
+            background: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--color-danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+            flex: 1;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- DASHBOARD TAB --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: stretch;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(99, 102, 241, 0.25);
+        }
+
+        .card-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        /* Drop Zone */
+        .drop-zone {
+            border: 2px dashed rgba(99, 102, 241, 0.3);
+            border-radius: 0.75rem;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.01);
+            margin-bottom: 1.5rem;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--color-primary);
+            background: rgba(99, 102, 241, 0.03);
+        }
+
+        .drop-zone-icon {
+            font-size: 2.5rem;
+            color: var(--color-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .drop-zone-text {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .drop-zone-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* File List */
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+
+        .file-name-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-icon {
+            color: var(--color-primary);
+            flex-shrink: 0;
+        }
+
+        .delete-file-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .delete-file-btn:hover {
+            color: var(--color-danger);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Terminal Window */
+        .terminal {
+            background: #030712;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            padding: 1rem;
+            height: 350px;
+            overflow-y: auto;
+            color: #34d399;
+            display: flex;
+            flex-direction: column;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 0.35rem;
+        }
+
+        .dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ef4444; }
+        .dot-yellow { background: #f59e0b; }
+        .dot-green { background: #10b981; }
+
+        .terminal-content {
+            white-space: pre-wrap;
+            flex: 1;
+        }
+
+        /* --- AUDIT TAB --- */
+        .audit-container {
+            display: grid;
+            grid-template-columns: 3fr 1.5fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .audit-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .report-display {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .report-display h1, .report-display h2, .report-display h3 {
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-main);
+            margin-top: 1.75rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .report-display h1 {
+            font-size: 1.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        .report-display h2 {
+            font-size: 1.4rem;
+        }
+
+        .report-display h3 {
+            font-size: 1.15rem;
+        }
+
+        .report-display p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .report-display ul, .report-display ol {
+            margin-bottom: 1.25rem;
+            padding-left: 1.5rem;
+            color: #cbd5e1;
+        }
+
+        .report-display li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Markdown tables */
+        .report-display table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .report-display th, .report-display td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .report-display th {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .report-display tr:hover {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        /* Markdown Alerts */
+        .report-display blockquote {
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .report-display blockquote p {
+            margin-bottom: 0;
+            color: var(--text-main);
+        }
+
+        /* GitHub style alert overrides (simple checks based on text prefix) */
+        .report-display blockquote.alert-note {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid var(--color-info);
+        }
+        .report-display blockquote.alert-tip {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--color-success);
+        }
+        .report-display blockquote.alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--color-warning);
+        }
+        .report-display blockquote.alert-important {
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 4px solid var(--color-primary);
+        }
+
+        /* Download Forms List */
+        .forms-card {
+            position: sticky;
+            top: 5.5rem;
+        }
+
+        .form-download-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .form-download-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .form-download-item:hover {
+            background: rgba(99, 102, 241, 0.05);
+            border-color: rgba(99, 102, 241, 0.2);
+        }
+
+        .form-download-name {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+        }
+
+        .form-download-btn {
+            background: transparent;
+            border: none;
+            color: var(--color-primary);
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .form-download-btn:hover {
+            transform: scale(1.15);
+            color: var(--color-accent);
+        }
+
+        /* --- CHAT TAB --- */
+        .chat-container {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 2rem;
+            height: calc(100vh - 12rem);
+            min-height: 500px;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+
+        .chat-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.online {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--color-success);
+        }
+
+        .status-badge.offline {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--color-danger);
+        }
+
+        .chat-window {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .chat-header {
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .chat-bubble {
+            max-width: 75%;
+            padding: 0.85rem 1.15rem;
+            border-radius: 0.75rem;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .chat-bubble.user {
+            background: var(--color-primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0.15rem;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .chat-bubble.gemma {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+            align-self: flex-start;
+            border-bottom-left-radius: 0.15rem;
+        }
+
+        .chat-bubble.gemma p {
+            margin-bottom: 0.75rem;
+        }
+        .chat-bubble.gemma p:last-child {
+            margin-bottom: 0;
+        }
+        .chat-bubble.gemma code {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+        }
+        .chat-bubble.gemma pre {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .chat-bubble.gemma pre code {
+            background: transparent;
+            padding: 0;
+            font-size: 0.8rem;
+        }
+
+        .chat-bubble.gemma table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.75rem 0;
+            font-size: 0.85rem;
+        }
+        .chat-bubble.gemma th, .chat-bubble.gemma td {
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            text-align: left;
+        }
+
+        .chat-input-area {
+            padding: 1.25rem 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--color-primary);
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 0.3rem;
+            padding: 0.25rem 0;
+        }
+
+        .typing-dot {
+            width: 0.4rem;
+            height: 0.4rem;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <div class="logo-icon">T</div>
+            Tax Prep Hub
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display:inline"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/></svg>
+                Dashboard
+            </button>
+            <button class="tab-btn" onclick="switchTab('audit')">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display:inline"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/><path d="M8 12a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM8 5a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 8 5z"/></svg>
+                Tax Prep Report
+            </button>
+            <button class="tab-btn" onclick="switchTab('chat')">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display:inline"><path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/><path d="M13.5 1a1.5 1.5 0 0 1 1.5 1.5v8.5a1.5 1.5 0 0 1-1.5 1.5H9l-3.5 3.5v-3.5H2a1.5 1.5 0 0 1-1.5-1.5V2.5A1.5 1.5 0 0 1 2 1h11.5zM2 2a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 .5.5h4v2.5l2.5-2.5h5a.5.5 0 0 0 .5-.5V2.5a.5.5 0 0 0-.5-.5H2z"/></svg>
+                Chat with Gemma
+            </button>
+        </div>
+        
+        <div class="header-actions">
+            <button class="btn btn-danger" onclick="confirmReset()">Reset Workspace</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- 1. DASHBOARD TAB -->
+        <div id="tab-dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <!-- Left: Upload & Files -->
+                <div class="card">
+                    <div class="card-title">
+                        Upload Tax Documents
+                        <span class="card-subtitle" id="demo-badge">Demo Mode Active (Folder Empty)</span>
+                    </div>
+                    
+                    <div class="drop-zone" id="drop-zone">
+                        <div class="drop-zone-icon">📥</div>
+                        <div class="drop-zone-text">Drag & drop tax documents here</div>
+                        <div class="drop-zone-sub">or click to browse from explorer</div>
+                        <input type="file" id="file-input" multiple style="display:none">
+                    </div>
+                    
+                    <div class="card-title" style="font-size: 1.1rem; margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: stretch;">
+                        <span style="font-weight: 600;">Secure Tax Docs Folder</span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="docs-dir-input" class="chat-input" style="flex: 1; font-size: 0.85rem; padding: 0.5rem;" placeholder="C:\path\to\your\tax\docs">
+                            <button class="btn btn-secondary" onclick="updateDocsDir()" style="font-size: 0.8rem; padding: 0.5rem 1rem;">Set Path</button>
+                        </div>
+                    </div>
+                    
+                    <div class="file-list" id="file-list">
+                        <div class="empty-state">No files uploaded. Tax Prep Swarm will run on Demo profile.</div>
+                    </div>
+                    
+                    <div style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <span style="font-family: 'Outfit', sans-serif; font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                            ⚙️ Tax Prep Execution Mode
+                        </span>
+                        
+                        <div style="display: flex; gap: 0.25rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); padding: 0.2rem; border-radius: 0.5rem;">
+                            <button id="mode-std-btn" class="tab-btn active" onclick="setRunMode('standard')" style="flex: 1; justify-content: center; font-size: 0.8rem; padding: 0.4rem; border-radius: 0.35rem;">
+                                Single Run
+                            </button>
+                            <button id="mode-opt-btn" class="tab-btn" onclick="setRunMode('optimized')" style="flex: 1; justify-content: center; font-size: 0.8rem; padding: 0.4rem; border-radius: 0.35rem;">
+                                Optimized (Multi-Run)
+                            </button>
+                        </div>
+                        
+                        <div id="runs-selector-container" style="display: none; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 0.5rem 0.75rem; border-radius: 0.5rem; font-size: 0.85rem; margin-top: 0.25rem;">
+                            <span style="color: var(--text-muted);">Number of Tax Prep Runs:</span>
+                            <input type="number" id="runs-count-input" class="chat-input" style="width: 4rem; text-align: center; font-size: 0.85rem; padding: 0.2rem; background: rgba(0,0,0,0.3);" min="2" max="10" value="5">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" id="run-swarm-btn" onclick="runSwarm()" style="width: 100%; justify-content: center; margin-top: 1rem; font-size: 1.05rem; padding: 0.8rem;">
+                        🔥 Run Tax Prep Swarm
+                    </button>
+                </div>
+                
+                <!-- Right: Terminal Execution Logs -->
+                <div class="card">
+                    <div class="card-title">
+                        Live Orchestrator Terminal
+                        <span class="status-badge" id="swarm-status" style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted)">idle</span>
+                    </div>
+                    
+                    <div class="terminal" id="terminal">
+                        <div class="terminal-header">
+                            <div class="terminal-dots">
+                                <div class="dot dot-red"></div>
+                                <div class="dot dot-yellow"></div>
+                                <div class="dot dot-green"></div>
+                            </div>
+                            <span>orchestrator.log</span>
+                        </div>
+                        <div class="terminal-content" id="terminal-content">Waiting to launch orchestration...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. AUDIT REPORT TAB -->
+        <div id="tab-audit" class="tab-content">
+            <div class="audit-container">
+                <!-- Left: Markdown Report -->
+                <div class="report-display" id="report-display">
+                    <div style="text-align: center; padding: 4rem 0; color: var(--text-muted);">
+                        <h2>No Report Generated</h2>
+                        <p>Go to the Dashboard and click "🔥 Run Tax Prep Swarm" to generate your report.</p>
+                    </div>
+                </div>
+                
+                <!-- Right: Filled Forms Downloader -->
+                <div class="card forms-card">
+                    <div class="card-title">Generated PDF Tax Forms</div>
+                    <div class="form-download-list" id="forms-list">
+                        <div class="empty-state">No filled PDFs found.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. CHAT WITH GEMMA TAB -->
+        <div id="tab-chat" class="tab-content">
+            <div class="chat-container">
+                <!-- Chat details / info -->
+                <div class="chat-sidebar">
+                    <div class="card">
+                        <div class="card-title">Local Gemma Chat</div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.75rem;">
+                            Speak directly with local Gemma about your tax preparation, standard deductions, or planning recommendations.
+                        </p>
+                        <div style="margin-bottom: 1rem;">
+                            <span class="status-badge online" id="ollama-status">Checking Ollama...</span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                            <strong>Aware of Workspace:</strong> Gemma understands script files and database schemas, so you can brainstorm adjustments you might ask Antigravity to make.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Main Chat Window -->
+                <div class="chat-window">
+                    <div class="chat-header">
+                        <span style="font-weight: 600; font-family: 'Outfit';">Gemma (Ollama Offline)</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);" id="chat-model-info">gemma2:9b</span>
+                    </div>
+                    
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-bubble gemma">
+                            Hi! I am Gemma, your local offline tax assistant. I've reviewed your tax files, the generated tax prep report, and the Python scripts in this directory. 
+                            <br><br>
+                            How can I help you understand your tax calculations or brainstorm changes to our code?
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" id="chat-input" placeholder="Ask Gemma about the tax calculations or scripts..." onkeydown="handleChatKey(event)">
+                        <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentTab = 'dashboard';
+        let isRunning = false;
+        let logInterval = null;
+        let chatHistory = [];
+        let docsDirInitialized = false;
+
+        // Marked.js setup
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        // Initialize App
+        window.onload = function() {
+            checkStatus();
+            setInterval(checkStatus, 3000);
+            checkOllama();
+        };
+
+        // Tab Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Find btn based on text
+            const tabIdx = ['dashboard', 'audit', 'chat'].indexOf(tabId);
+            document.querySelectorAll('.tab-btn')[tabIdx].classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            currentTab = tabId;
+            
+            if (tabId === 'audit') {
+                loadReport();
+            }
+        }
+
+        // Fetch Status
+        async function checkStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                
+                // Initialize docs dir input once
+                if (!docsDirInitialized && data.docs_dir) {
+                    document.getElementById('docs-dir-input').value = data.docs_dir;
+                    docsDirInitialized = true;
+                }
+                
+                // Update Demo Badge
+                const demoBadge = document.getElementById('demo-badge');
+                if (data.raw_files.length === 0) {
+                    demoBadge.innerText = "Demo Mode Active (Folder Empty)";
+                    demoBadge.style.color = "var(--color-warning)";
+                } else {
+                    demoBadge.innerText = `${data.raw_files.length} Real File(s) Loaded`;
+                    demoBadge.style.color = "var(--color-success)";
+                }
+                
+                // Update File List
+                updateFileList(data.raw_files);
+                
+                // Update Swarm Status
+                const statusBadge = document.getElementById('swarm-status');
+                const runBtn = document.getElementById('run-swarm-btn');
+                isRunning = data.running;
+                
+                if (data.running) {
+                    statusBadge.innerText = "running";
+                    statusBadge.style.background = "rgba(245, 158, 11, 0.15)";
+                    statusBadge.style.color = "var(--color-warning)";
+                    runBtn.disabled = true;
+                    runBtn.innerText = "Swarm Running...";
+                    
+                    if (!logInterval) {
+                        startPollingLogs();
+                    }
+                } else {
+                    statusBadge.innerText = "idle";
+                    statusBadge.style.background = "rgba(255, 255, 255, 0.05)";
+                    statusBadge.style.color = "var(--text-muted)";
+                    runBtn.disabled = false;
+                    runBtn.innerText = "🔥 Run Tax Prep Swarm";
+                    
+                    if (logInterval) {
+                        stopPollingLogs();
+                        loadReport(); // load report if it just finished
+                    }
+                }
+                
+                // Update Filled Forms Download List
+                updateFormsList(data.filled_forms);
+                
+            } catch (err) {
+                console.error("Status check failed", err);
+            }
+        }
+
+        // File List Renderer
+        function updateFileList(files) {
+            const list = document.getElementById('file-list');
+            if (files.length === 0) {
+                list.innerHTML = `<div class="empty-state">No files uploaded. Tax Prep Swarm will run on Demo profile.</div>`;
+                return;
+            }
+            
+            list.innerHTML = files.map(file => `
+                <div class="file-item">
+                    <div class="file-name-container">
+                        <span class="file-icon">📄</span>
+                        <span title="${file}">${file}</span>
+                    </div>
+                    <button class="delete-file-btn" onclick="deleteFile('${file}')">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        // Forms List Renderer
+        function updateFormsList(forms) {
+            const list = document.getElementById('forms-list');
+            if (forms.length === 0) {
+                list.innerHTML = `<div class="empty-state">No filled PDFs found.</div>`;
+                return;
+            }
+            
+            list.innerHTML = forms.map(form => `
+                <div class="form-download-item">
+                    <span class="form-download-name">${form}</span>
+                    <button class="form-download-btn" onclick="downloadForm('${form}')" title="Download Form">
+                        ⬇️
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Download Form API Redirect
+        function downloadForm(filename) {
+            window.open(`/api/forms/download/${filename}`, '_blank');
+        }
+
+        // Upload Handlers
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+
+        dropZone.onclick = () => fileInput.click();
+        
+        dropZone.ondragover = (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        };
+        
+        dropZone.ondragleave = () => {
+            dropZone.classList.remove('dragover');
+        };
+        
+        dropZone.ondrop = async (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFiles(files);
+            }
+        };
+
+        fileInput.onchange = async () => {
+            const files = fileInput.files;
+            if (files.length > 0) {
+                uploadFiles(files);
+            }
+        };
+
+        async function uploadFiles(files) {
+            for (let file of files) {
+                const formData = new FormData();
+                formData.append("file", file);
+                
+                try {
+                    const res = await fetch("/api/upload", {
+                        method: "POST",
+                        body: formData
+                    });
+                    const result = await res.json();
+                    console.log("Uploaded file", result);
+                } catch (err) {
+                    alert(`Failed to upload ${file.name}`);
+                }
+            }
+            checkStatus();
+        }
+
+        async function deleteFile(filename) {
+            try {
+                await fetch("/api/delete-file", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({filename: filename})
+                });
+                checkStatus();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Update Docs Directory Path
+        async function updateDocsDir() {
+            const dir = document.getElementById('docs-dir-input').value.trim();
+            if (!dir) return;
+            
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({docs_dir: dir})
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    // Update field value in case backend cleaned/modified it (e.g. absolute paths)
+                    document.getElementById('docs-dir-input').value = data.docs_dir;
+                    checkStatus();
+                } else {
+                    alert(`Error: ${data.detail || 'Could not update directory'}`);
+                }
+            } catch (err) {
+                alert(`Error setting directory: ${err}`);
+            }
+        }
+
+        // Reset Workspace
+        function confirmReset() {
+            if (confirm("Are you sure you want to delete all uploaded documents, processed data, generated PDFs, and reset logs?")) {
+                fetch("/api/clear-all", {method: "POST"})
+                    .then(res => res.json())
+                    .then(() => {
+                        checkStatus();
+                        document.getElementById('terminal-content').innerText = "Workspace reset.";
+                        document.getElementById('report-display').innerHTML = `
+                            <div style="text-align: center; padding: 4rem 0; color: var(--text-muted);">
+                                <h2>No Report Generated</h2>
+                                <p>Go to the Dashboard and click "🔥 Run Tax Prep Swarm" to generate your report.</p>
+                            </div>
+                        `;
+                    });
+            }
+        }
+
+        let runMode = 'standard';
+        
+        function setRunMode(mode) {
+            runMode = mode;
+            const stdBtn = document.getElementById('mode-std-btn');
+            const optBtn = document.getElementById('mode-opt-btn');
+            const selector = document.getElementById('runs-selector-container');
+            
+            if (mode === 'standard') {
+                stdBtn.classList.add('active');
+                optBtn.classList.remove('active');
+                selector.style.display = 'none';
+            } else {
+                stdBtn.classList.remove('active');
+                optBtn.classList.add('active');
+                selector.style.display = 'flex';
+            }
+        }
+
+        // Run Swarm
+        async function runSwarm() {
+            if (isRunning) return;
+            
+            const runsCount = parseInt(document.getElementById('runs-count-input').value) || 5;
+            document.getElementById('terminal-content').innerText = "Initializing swarm agents...";
+            try {
+                const res = await fetch('/api/run', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        mode: runMode,
+                        runs: runsCount
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'started' || data.status === 'already_running') {
+                    startPollingLogs();
+                }
+            } catch (err) {
+                document.getElementById('terminal-content').innerText = "Failed to launch swarm.";
+            }
+        }
+
+        // Polling Logs
+        function startPollingLogs() {
+            if (logInterval) clearInterval(logInterval);
+            
+            logInterval = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/logs');
+                    const data = await res.json();
+                    
+                    const term = document.getElementById('terminal-content');
+                    term.innerText = data.logs || "No logs available.";
+                    
+                    // Auto scroll
+                    const terminal = document.getElementById('terminal');
+                    terminal.scrollTop = terminal.scrollHeight;
+                    
+                    if (!data.running && logInterval) {
+                        stopPollingLogs();
+                        checkStatus();
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch logs", err);
+                }
+            }, 1000);
+        }
+
+        function stopPollingLogs() {
+            if (logInterval) {
+                clearInterval(logInterval);
+                logInterval = null;
+            }
+        }
+
+        // Load Report
+        async function loadReport() {
+            const display = document.getElementById('report-display');
+            try {
+                const res = await fetch('/api/report');
+                if (res.status === 404) {
+                    return; // show default text
+                }
+                const data = await res.json();
+                
+                // Parse markdown
+                let html = marked.parse(data.markdown);
+                
+                // Custom replacement for blockquote alerts
+                html = html.replace(/<blockquote>\s*<p>\s*\[!NOTE\]/gi, '<blockquote class="alert-note"><p><strong>NOTE:</strong>');
+                html = html.replace(/<blockquote>\s*<p>\s*\[!TIP\]/gi, '<blockquote class="alert-tip"><p><strong>TIP:</strong>');
+                html = html.replace(/<blockquote>\s*<p>\s*\[!WARNING\]/gi, '<blockquote class="alert-warning"><p><strong>WARNING:</strong>');
+                html = html.replace(/<blockquote>\s*<p>\s*\[!IMPORTANT\]/gi, '<blockquote class="alert-important"><p><strong>IMPORTANT:</strong>');
+                
+                display.innerHTML = html;
+            } catch (err) {
+                console.error("Report loading failed", err);
+            }
+        }
+
+        // Check Ollama status
+        async function checkOllama() {
+            const badge = document.getElementById('ollama-status');
+            const modelInfo = document.getElementById('chat-model-info');
+            try {
+                const res = await fetch('/api/status'); // app backend is running
+                
+                // We'll infer Ollama status by checking active model
+                const modelRes = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({messages: [{role: 'user', content: 'ping'}]})
+                });
+                const chatData = await modelRes.json();
+                
+                if (chatData.response && !chatData.response.startsWith("Failed to connect")) {
+                    badge.innerText = "Ollama Online";
+                    badge.className = "status-badge online";
+                    modelInfo.innerText = chatData.model || "Gemma Mode";
+                } else {
+                    badge.innerText = "Ollama Offline";
+                    badge.className = "status-badge offline";
+                    modelInfo.innerText = "No Connection";
+                }
+            } catch (err) {
+                badge.innerText = "Ollama Offline";
+                badge.className = "status-badge offline";
+                modelInfo.innerText = "No Connection";
+            }
+        }
+
+        // Chat Handlers
+        function handleChatKey(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            input.value = "";
+            
+            // Append User Message
+            const messagesContainer = document.getElementById('chat-messages');
+            const userBubble = document.createElement('div');
+            userBubble.className = 'chat-bubble user';
+            userBubble.innerText = text;
+            messagesContainer.appendChild(userBubble);
+            
+            // Append Typing Indicator
+            const gemmaBubble = document.createElement('div');
+            gemmaBubble.className = 'chat-bubble gemma';
+            gemmaBubble.id = 'gemma-loading';
+            gemmaBubble.innerHTML = `
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            messagesContainer.appendChild(gemmaBubble);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Add to local history
+            chatHistory.push({role: 'user', content: text});
+            
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({messages: chatHistory})
+                });
+                const data = await res.json();
+                
+                // Remove loading bubble
+                const loading = document.getElementById('gemma-loading');
+                if (loading) loading.remove();
+                
+                // Append Gemma Response
+                const replyBubble = document.createElement('div');
+                replyBubble.className = 'chat-bubble gemma';
+                replyBubble.innerHTML = marked.parse(data.response);
+                messagesContainer.appendChild(replyBubble);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Add to history
+                chatHistory.push({role: 'assistant', content: data.response});
+                
+            } catch (err) {
+                const loading = document.getElementById('gemma-loading');
+                if (loading) loading.remove();
+                
+                const replyBubble = document.createElement('div');
+                replyBubble.className = 'chat-bubble gemma';
+                replyBubble.innerText = "Error contacting server. Please verify the backend is running.";
+                messagesContainer.appendChild(replyBubble);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>
