@@ -141,70 +141,140 @@ def extract_names(tax_data: dict) -> list[str]:
     return [n for n in names if n.strip()]
 
 def score_report(text: str) -> tuple[int, list[str], list[str]]:
-    """Score candidate report against a strict compliance rubric and track negatives."""
+    """Score candidate report against a structural completeness rubric."""
     text_lower = text.lower()
     score = 0
     passed_rubrics = []
     matched_negatives = []
-    
-    # Rubric 1: Safe Harbor (10 pts)
-    sh_keywords = ["110%", "safe harbor", "107,800"]
-    if any(k in text_lower for k in sh_keywords):
+
+    # 1. Safe Harbor evaluation (10 pts)
+    if any(k in text_lower for k in ["safe harbor", "110%", "underpayment", "form 2210", "2210"]):
         score += 10
         passed_rubrics.append("safe_harbor_evaluation")
-        
-    # Rubric 2: Late Payment Penalty (10 pts)
-    ftp_keywords = ["failure-to-pay", "failure to pay", "penalty", "240"]
-    if any(k in text_lower for k in ftp_keywords):
+
+    # 2. Late payment penalty (10 pts)
+    if any(k in text_lower for k in ["failure-to-pay", "failure to pay", "6651", "0.5%"]):
         score += 10
         passed_rubrics.append("late_payment_penalty")
-        
-    # Rubric 3: Interest (10 pts)
-    interest_keywords = ["interest", "322", "8%"]
-    if any(k in text_lower for k in interest_keywords):
+
+    # 3. Interest calculation (10 pts)
+    if any(k in text_lower for k in ["interest", "6621", "compound", "daily"]):
         score += 10
         passed_rubrics.append("interest_calculation")
-        
-    # Rubric 4: Passive Loss Suspension (15 pts)
-    pl_keywords = ["phase-out", "phase out", "suspended", "suspension", "8582", "4,182"]
-    if any(k in text_lower for k in pl_keywords):
+
+    # 4. Passive loss analysis (15 pts)
+    if any(k in text_lower for k in ["passive", "8582", "phase-out", "phase out", "suspended", "suspension"]):
         score += 15
-        passed_rubrics.append("passive_loss_suspension")
-        
-    # Rubric 5: MACRS (15 pts)
-    macrs_keywords = ["27.5", "straight-line", "mid-month", "land", "70,000"]
-    if any(k in text_lower for k in macrs_keywords):
+        passed_rubrics.append("passive_loss_analysis")
+
+    # 5. MACRS depreciation (15 pts)
+    if any(k in text_lower for k in ["27.5", "macrs", "straight-line", "mid-month", "depreciation"]):
         score += 15
         passed_rubrics.append("macrs_depreciation")
-        
-    # Rubric 6: Hobby Loss (15 pts)
-    hobby_keywords = ["hobby", "183", "non-deductible", "not deductible", "disallowed"]
-    if any(k in text_lower for k in hobby_keywords):
-        score += 15
-        passed_rubrics.append("hobby_loss_risk")
-        
-    # Rubric 7: Minimization Strategies (10 pts)
-    savings_keywords = ["1,515.98", "4,350", "savings", "loophole"]
-    if any(k in text_lower for k in savings_keywords):
+
+    # 6. Hobby loss / Schedule C assessment (10 pts)
+    if any(k in text_lower for k in ["hobby", "183", "profit motive", "schedule c"]):
         score += 10
-        passed_rubrics.append("tax_minimization_planning")
-        
-    # Rubric 8: Missing Documents & Client Questions (15 pts)
-    missing_docs_keywords = ["missing", "requested documents", "questions", "receipt"]
-    if any(k in text_lower for k in missing_docs_keywords):
+        passed_rubrics.append("hobby_loss_assessment")
+
+    # 7. Tax minimization strategies (15 pts)
+    if any(k in text_lower for k in ["strategy", "str loophole", "short-term rental", "reps", "real estate professional", "savings"]):
         score += 15
-        passed_rubrics.append("missing_documents_and_questions")
-        
-    # Penalties for forbidden/negative keywords (subtract 5 pts each)
-    negatives = ["deduct in full", "allowable deduction", "failure-to-file penalty", "5% per month"]
+        passed_rubrics.append("tax_minimization_strategies")
+
+    # 8. Missing docs / open questions (15 pts)
+    if any(k in text_lower for k in ["missing", "requested documents", "open questions", "questions for", "still needed"]):
+        score += 15
+        passed_rubrics.append("missing_documents_section")
+
+    # Negatives: these rules only apply if the return is late — flag if incorrectly cited
+    negatives = ["failure-to-file penalty", "5% per month"]
     for neg in negatives:
         if neg in text_lower:
             score -= 5
             matched_negatives.append(neg)
-            
-    # Cap score between 0 and 100
-    score = max(0, min(score, 100))
-    return score, passed_rubrics, matched_negatives
+
+    return max(0, min(score, 100)), passed_rubrics, matched_negatives
+
+
+def build_system_prompt(tax_data: dict, current_date: str, tax_year: int) -> str:
+    """Build a data-driven system prompt from actual extracted tax data."""
+    filing = tax_data.get("filing_details", {})
+    w2 = tax_data.get("w2_summary", {})
+    rental = tax_data.get("rental_property", {})
+    side_biz = tax_data.get("side_business", {})
+
+    filing_status = filing.get("filing_status", "unknown")
+    prior_tax = filing.get("prior_year_total_tax")
+    total_wages = w2.get("total_w2_wages")
+    total_withheld = w2.get("total_federal_withheld")
+
+    def fmt(val):
+        if isinstance(val, (int, float)):
+            return f"${val:,.2f}"
+        return str(val) if val else "not available"
+
+    lines = []
+    if total_wages:
+        lines.append(f"- Total W-2 wages: {fmt(total_wages)}")
+    if total_withheld:
+        lines.append(f"- Federal withholding: {fmt(total_withheld)}")
+    if prior_tax:
+        lines.append(f"- Prior year tax liability: {fmt(prior_tax)}")
+    net_rental = rental.get("net_reported_loss") or rental.get("net_profit_or_loss")
+    if net_rental is not None:
+        lines.append(f"- Rental net loss/profit: {fmt(net_rental)}")
+    net_biz = side_biz.get("net_reported_loss") or side_biz.get("net_profit_or_loss")
+    if net_biz is not None:
+        lines.append(f"- Side business net loss/profit: {fmt(net_biz)}")
+
+    data_context = "\n".join(lines) if lines else "(see full tax data below)"
+
+    return f"""You are the Tax Prep Agent (Advisor). Generate a premium Tax Preparation Report & Action Plan based on the actual extracted tax data.
+
+CRITICAL CONSTANTS:
+- Current Date of Review: {current_date}
+- Tax Year Under Review: {tax_year}
+- Filing Status: {filing_status}
+
+KEY DATA SUMMARY:
+{data_context}
+
+REQUIRED REPORT STRUCTURE — address each section using the actual data provided:
+
+1. EXECUTIVE SUMMARY
+   Summarize key income sources, payment status, and top recommendations.
+
+2. ESTIMATED TAX & SAFE HARBOR EVALUATION (IRC § 6654)
+   - Determine if this is a high-income filer (prior year AGI > $150k → 110% safe harbor applies).
+   - Compute the safe harbor threshold and compare against total payments (withholding + estimated).
+   - State whether Form 2210 underpayment penalty applies.
+
+3. LATE PAYMENT PENALTIES & INTEREST
+   - Calculate remaining balance (estimated total tax minus total payments).
+   - Failure-to-Pay Penalty (IRC § 6651(a)(2)): 0.5%/month on unpaid balance from April 15.
+   - Interest (IRC § 6621): daily compounding at federal short-term rate + 3%.
+   - Present a liability summary table: principal due, penalty, interest, total balance.
+
+4. COMPLIANCE REVIEW & RECOMMENDED ACTIONS
+   - Passive Loss (IRC § 469): Apply MAGI phase-out to rental net income/loss. State whether losses must be suspended on Form 8582.
+   - MACRS Depreciation: Verify 27.5-year GDS straight-line, mid-month convention, land exclusion.
+   - Hobby Loss (IRC § 183): Assess side business loss history. Flag hobby classification risk and profit-motive steps.
+
+5. TAX MINIMIZATION STRATEGIES
+   Calculate potential savings at the taxpayer's actual marginal rate:
+   - STR Loophole (Treas. Reg. § 1.469-1T(e)(3)(ii)(A)): if rental loss and property could qualify.
+   - REPS Spouse Strategy (IRC § 469(c)(7)): if a spouse could meet the 750-hour / 50% tests.
+   - Hobby-to-Business Restructuring: dollar benefit of defending Schedule C losses.
+
+6. MISSING DOCUMENTS & OPEN QUESTIONS
+   List any gaps in the data and questions for the taxpayer.
+
+7. NEXT STEPS & ACTION ITEMS
+   Actionable checklist to reach "ready to file."
+
+Base ALL calculations on the provided tax data. Do not invent or substitute figures.
+Output professional markdown only (no raw JSON)."""
 
 def main():
     parser = argparse.ArgumentParser(description="Filing-Only Multi-Run Tax Swarm Execution Engine")
@@ -251,51 +321,11 @@ def main():
                     skills_context += f"\n=== Skill: {skill_file} ===\n" + sf.read() + "\n"
                     
     current_date = datetime.date.today().isoformat()
-    tax_year = 2025
-    
-    system_prompt = (
-        "You are the Tax Prep Agent (Advisor). Your goal is to review the compiled tax data against the provided skills rules and generate a premium, high-impact Tax Preparation Report & Action Plan.\n"
-        f"CRITICAL CONSTANTS:\n"
-        f"- Current Date of Review: {current_date} (Use EXACTLY this date at the top of your report! Never use 2023 or any other year)\n"
-        f"- Tax Year Under Review: {tax_year}\n\n"
-        "REQUIRED REPORT STRUCTURE & CONTENT:\n"
-        "Your report must be written in professional markdown with clear headings, tables, and alerts (e.g. > [!NOTE], > [!IMPORTANT]). Tone should be constructive and advisory (\"here's how we do this right, here are next steps\"), NOT adversarial or punitive. Address the following sections in detail:\n\n"
-        "1. EXECUTIVE SUMMARY:\n"
-        f"   - Highlight that the review date is {current_date} and the tax year under review is {tax_year}.\n"
-        "   - Summarize the key recommendations: rental passive loss treatment, MACRS depreciation, side-business structuring, and resolving remaining liabilities.\n\n"
-        "2. ESTIMATED TAX & SAFE HARBOR EVALUATION:\n"
-        "   - Analyze safe harbor compliance: Prior year tax liability was $98,000. For high-income taxpayers (AGI > $150,000), the safe harbor is 110% of prior year tax, which equals $107,800.\n"
-        "   - Since the taxpayer had $115,000 in federal withholding, they exceeded the 110% safe harbor threshold of $107,800 and are exempt from the underpayment penalty (Form 2210).\n\n"
-        "3. LATE PAYMENT PENALTIES & INTEREST CALCULATIONS (AS OF OCTOBER 14, 2026):\n"
-        "   - Detail the remaining tax due of $8,000 as of the April 15, 2026 deadline.\n"
-        "   - Calculate the Late Payment Penalty (IRC § 6651(a)(2)): 0.5% per month or fraction of a month from April 15, 2026 to October 14, 2026. This is exactly 6 months, resulting in a 3.0% penalty ($240.00).\n"
-        "   - Calculate the Late Payment Interest (IRC § 6621): Interest compounds daily on the unpaid tax from April 15, 2026 to October 14, 2026. Using an 8.0% annual rate, the interest is approximately $322.00.\n"
-        "   - Present a prominent 'Tax Liability and Penalty Calculation' table showing:\n"
-        "     * Remaining Tax Principal Due: $8,000.00\n"
-        "     * Failure-to-Pay Penalty (3.0%): $240.00\n"
-        "     * Estimated Interest (8% compounded daily): $322.00\n"
-        "     * Total Balance Due: $8,562.00\n\n"
-        "4. COMPLIANCE REVIEW & RECOMMENDED ACTIONS:\n"
-        "   - Rental Passive Loss Suspension (IRC § 469): Verify that the $25,000 special allowance is 100% phased out due to high MAGI ($480,000 W-2 income). Explain that the rental loss of $4,182 must be suspended and carried forward on Form 8582, unless an optimization loophole is utilized.\n"
-        "   - MACRS Depreciation: Confirm that the residential rental property must be depreciated over 27.5 years using straight-line and mid-month convention, and that land value ($70,000) was correctly excluded from the depreciable basis ($280,000).\n"
-        "   - Hobby Loss Presumption (IRC § 183): Note that this side business has reported losses in 4 out of 5 years, which may trigger hobby loss classification. Recommended action: establish profit motive documentation (see next steps) to protect business status and continue deducting valid business expenses under the TCJA.\n\n"
-        "5. TAX MINIMIZATION STRATEGIES (LEGAL LOOPHOLES & PLANNING):\n"
-        "   Propose aggressive yet legal planning strategies to minimize taxes and penalties, calculating the exact potential savings based on a combined 36.25% marginal tax rate (32% Federal + 4.25% Michigan state):\n"
-        "   - Short-Term Rental (STR) Loophole (Treas. Reg. § 1.469-1T(e)(3)(ii)(A)): Restructure the property to average stays of <= 7 days and meet material participation (>100 hours and more than others). This bypasses rental passive limits, allowing the $4,182 rental loss to be fully deducted against W-2 income. **Potential Tax Savings: $1,515.98**.\n"
-        "   - Real Estate Professional Status (REPS) Spouse Strategy (IRC § 469(c)(7)): If Spouse 2 qualifies by performing >750 hours and >50% of services in real property business, all rental losses become fully deductible against W-2 income.\n"
-        "   - Hobby-to-Business Restructuring: Outline a plan to establish profit motive under the 9 IRS factors (separate business bank account, formal business plan, consulting CPAs, dedicating time). This allows them to deduct the $7,000 Schedule C net loss instead of paying tax on the $5,000 gross revenue with zero deductions. **Potential Tax Savings: $4,350.00** (reclaims $2,537.50 from the loss and avoids $1,812.50 tax on gross revenue).\n\n"
-        "6. NEXT STEPS & ACTION ITEMS:\n"
-        "   Provide a clear, actionable checklist of next steps for the taxpayer, including:\n"
-        "   - Documenting the profit motive for the side business (Schedule C) to support business status.\n"
-        "   - Reviewing material participation hours (average stays <= 7 days) if electing the STR loophole.\n"
-        "   - Tracking hours for REPS if applicable.\n"
-        "   - Setting up separate business bank accounts and keeping detailed logs.\n"
-        "   - Resolving the remaining tax balance and preparing/submitting the filled tax forms.\n\n"
-        "Write your report in clear, formal, and advisory language. Do not output raw JSON, only markdown."
-    )
-    
-    system_prompt_short = "You are a tax preparation advisor. Generate a premium, high-impact Tax Preparation Report & Action Plan by following the detailed instructions, rules, and tax data provided in the user prompt."
-    
+    tax_year = tax_data.get("filing_details", {}).get("tax_year", 2025)
+
+    system_prompt = build_system_prompt(tax_data, current_date, tax_year)
+    system_prompt_short = "You are a tax preparation advisor. Generate a premium Tax Preparation Report & Action Plan by following the instructions, rules, and tax data provided in the user prompt."
+
     user_prompt = (
         f"{system_prompt}\n\n"
         f"--- TAX DATA ---\n{tax_data_str}\n\n"

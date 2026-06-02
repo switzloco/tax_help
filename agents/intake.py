@@ -13,9 +13,6 @@ def classify_document(filename: str, content_snippet: str = "") -> str:
         return "W2"
     if "WAGE AND TAX STATEMENT" in snip_up or ("W-2" in snip_up and "WAGES" in snip_up):
         return "W2"
-    if "KEYSIGHT" in snip_up or "STRYKER" in snip_up:
-        if "WAGES" in snip_up or "BOX 1" in snip_up or "FEDERAL" in snip_up:
-            return "W2"
     if "1099NEC" in name_up or "1099_NEC" in name_up:
         return "1099_NEC"
     if "1099DIV" in name_up or "1099_DIV" in name_up or "DIVIDEND" in name_up:

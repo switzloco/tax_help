@@ -138,7 +138,7 @@ def main(args_list=None):
     parser.add_argument("--audit-model", type=str, default="gemma4:latest", help="Model override for Tax Prep Agent (default: gemma4:latest)")
     args = parser.parse_args(args_list)
     
-    raw_docs_dir = Path(args.docs_dir) if args.docs_dir else Path(os.environ.get("TAX_DOCS_DIR", r"C:\Users\nswitzer\Antigrav Proj\tax_help\raw_docs"))
+    raw_docs_dir = Path(args.docs_dir) if args.docs_dir else Path(os.environ.get("TAX_DOCS_DIR", str(WORKSPACE_DIR / "raw_docs")))
     
     from shared.ollama_client import resolve_model
     models = {

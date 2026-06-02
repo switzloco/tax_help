@@ -12,7 +12,7 @@ cloud model do the heavy tax reasoning — so we can finish filing fast and safe
 
 | Decision | Choice |
 |---|---|
-| **Number boundary** | **Redact the numbers too — the user fills them back in.** The Bouncer masks *named* PII **and** the dollar figures, replacing each amount with a consistent placeholder (e.g. `[WAGES_1]`, `[RENTAL_NET_1]`). The cloud Brain reasons purely on structure + rules and never sees a real figure. The real numbers stay in the local rehydration map and **you fill them into the final forms** (assisted by the Hands locally). This fully blinds the cloud to income — matching the original instinct. |
+| **Number boundary** | **Named PII redacted; real dollar figures pass through.** A dollar figure alone (e.g. `$480,000`) is not PII — it can't identify you without names/SSN/employer to link it to. The Bouncer strips all identifying fields and lets numbers cross. The Brain can then compute directly (safe-harbor math, penalty calc, marginal-rate strategy savings). This was refined from the original "tokenize everything" approach after confirming that numbers without identity context are safe. |
 | **Who calls the cloud** | **This repo only prepares the sanitized bundle.** Antigravity (the Hands) makes the actual Gemini calls on your machine. No Gemini API keys live in this repo. |
 | **Scope of this doc** | **Plan only.** Nothing below is implemented yet. On approval I execute it on the branch. |
 
@@ -126,14 +126,12 @@ never misses a well-formed SSN and NER catches the free-text names/employer/addr
 | Bank routing/acct | direct deposit / payments | regex (routing 9-digit, acct) → `[BANK_n]` | No |
 | Home address | Union Avenue | NER address + street regex → `[ADDRESS_n]` | No |
 | Brokerage/1099 acct # | account numbers on 1099s | regex + NER → `[ACCT_n]` | No |
-| **Dollar figures** | wages, rental, withholding, etc. | currency regex + field-aware extraction → `[WAGES_n]`, `[RENTAL_NET_n]`, `[WITHHELD_n]`… | **No — user fills back in** |
+| **Dollar figures** | wages, rental, withheld, etc. | **kept as-is** | **Yes — safe without identity context** |
 
 Placeholders are *consistent and reversible*: the same real value always maps to
-the same token within a run, so the Brain can reason ("[PERSON_2] is a dependent
-with wages [WAGES_3]") and we can re-hydrate exactly when filling forms. Because
-the **amounts are tokenized too**, the Brain produces a *template* tax map; the
-real figures are slotted back in locally — by **you**, with the Hands pre-filling
-each blank from the local rehydration map and pausing for your confirmation.
+the same token within a run, so the Brain can reason ("filer has $480k in wages,
+which fully phases out the $25k passive-loss allowance") and compute concrete
+strategy savings, penalty amounts, and safe-harbor thresholds from real data.
 
 ### 4.2 Two artifacts, one boundary
 
@@ -147,11 +145,8 @@ each blank from the local rehydration map and pausing for your confirmation.
 A `verify_no_pii.py` check scans the sanitized bundle right before it is allowed
 to leave, and the pipeline refuses to proceed if any of these are still present:
 
-- any `\d{3}-\d{2}-\d{4}`, any `\d{2}-\d{7}`, any 9-digit routing-like number,
-- any name from the known-names list, the employer list, or the street name,
-- **any real value found in the rehydration map** — since amounts are now tokenized,
-  every real figure in the map is treated as a forbidden string in the outbound
-  bundle. This catches both un-redacted amounts and un-redacted names in one pass.
+- any `\d{3}-\d{2}-\d{4}` (SSN), any `\d{2}-\d{7}` (EIN), any 9-digit routing number,
+- any name from the known-names list, the employer list, or the street address.
 
 This runs as a hard gate (fail-closed) and as a unit test with synthetic fixtures
 (no real PII in the repo).
@@ -169,12 +164,10 @@ This runs as a hard gate (fail-closed) and as a unit test with synthetic fixture
 4. **Brain (Antigravity → Gemini Pro).** Sanitized bundle in → tax-logic JSON map
    out. Strategies/penalties/safe-harbor are *computed from your numbers*, with the
    IRC rules as reference. Open questions for you are listed here.
-5. **Re-hydrate (local, user-confirmed).** The Hands pre-fill each placeholder from
-   the local map and present the real figures to **you** for confirmation before
-   they land on a form — so the numbers re-enter under your eye, never the cloud's.
-6. **Hands (Antigravity → Gemini Flash).** Fill the actual PDFs with the confirmed
-   real values, run QA + savings + comms, surface "docs still needed / questions /
-   ready-to-file."
+5. **Re-hydrate (local).** Swap `[PERSON_n]` / `[SSN_n]` / `[EIN_n]` etc. back to
+   real values using the local rehydration map before anything lands on a form.
+6. **Hands (Antigravity → Gemini Flash).** Fill the actual PDFs with real values,
+   run QA + savings + comms, surface "docs still needed / questions / ready-to-file."
 7. **Loop** until ready, then hand the prepped package to your CPA.
 
 The existing CPA-loop in `orchestrator.py` (intake→planner→extractor→strategist→
@@ -236,11 +229,10 @@ scoring path.
 - **Redaction miss → PII leak.** Mitigated by NER+regex defense-in-depth, the
   fail-closed tripwire, and the rule that the bundle is built locally and only
   *handed to* Antigravity (you stay in the loop at the boundary).
-- **Numbers stay home.** Dollar figures are tokenized and never cross; you slot the
-  real values back in locally. The trade-off is that the Brain returns a *template*
-  (it can't do final arithmetic on hidden numbers) — so the actual math runs in the
-  local `tax_math.py`, and the Brain's value is rules/structure/strategy, not a
-  calculator. This is the stronger-privacy posture and matches your latest steer.
+- **Numbers cross; identity stays home.** A bare dollar figure with no name/SSN/
+  employer attached is not PII. The Brain gets real numbers and can reason fully.
+  The only risk is if Gemini logs your income level in aggregate — acceptable given
+  that it has no idea *whose* income it is.
 - **Cloud model availability / keys.** Out of this repo's scope by design — the repo
   produces the bundle; Antigravity owns the Gemini calls.
 - **Serial-agent latency / context windows** (your 4-hour target): each tier passes

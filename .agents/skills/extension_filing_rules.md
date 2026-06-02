@@ -37,5 +37,4 @@ To avoid the estimated tax underpayment penalty (Form 2210), taxpayers must make
 1. **90% Rule:** Pay at least **90%** of the tax liability shown on the current year's tax return.
 2. **100% Rule (Standard):** Pay **100%** of the tax liability shown on the prior year's tax return.
 3. **110% Rule (High-Income):** If the taxpayer's Adjusted Gross Income (AGI) on the prior year's return exceeded **$150,000** (for Married Filing Jointly [MFJ] or Single):
-   - **Requirement:** Must pay **110%** of the prior year's tax liability.
-   - **Case Profile Evaluation:** With a W-2 income of **$480,000**, this household is classified as high-income. They must meet the **110% safe harbor** to avoid underpayment penalties if they rely on the prior year's tax liability.
+   - **Requirement:** Must pay **110%** of the prior year's tax liability to avoid the estimated tax underpayment penalty.

@@ -10,16 +10,13 @@ Before applying passive loss rules, the taxpayer's loss must clear the at-risk l
 - **Qualified Nonrecourse Financing:** For real estate, qualified nonrecourse financing secured by the real property is treated as an amount at risk.
 
 ### Passive Activity Loss (PAL) Limitations (IRC § 469)
-Rental real estate is per se a passive activity regardless of the taxpayer's level of participation (unless they qualify as a Real Estate Professional under IRC § 469(c)(7), which is not met with $480k W-2 income).
+Rental real estate is per se a passive activity regardless of the taxpayer's level of participation (unless they qualify as a Real Estate Professional under IRC § 469(c)(7)).
 
 #### The $25,000 Special Allowance Phase-Out
 - **General Rule:** Taxpayers who "actively participate" in a rental real estate activity can deduct up to $25,000 of passive rental losses against non-passive income (such as W-2 wages, interest, and business profits).
 - **Phase-Out Formula:** The $25,000 allowance is reduced by $0.50 for every $1.00 that the taxpayer's Modified Adjusted Gross Income (MAGI) exceeds $100,000.
   $$\text{Allowance Reduction} = (\text{MAGI} - \$100,000) \times 0.50$$
-- **Complete Phase-Out Threshold:** The allowance is reduced to $0 when MAGI reaches **$150,000**.
-- **Case Profile Evaluation:** With a W-2 income of **$480,000**, the taxpayers' MAGI exceeds the $150,000 limit. 
-  - **Result:** The $25,000 active participation allowance is **completely phased out (Allowance = $0)**.
-  - **Required Action:** 100% of the rental losses must be suspended and carried forward.
+- **Complete Phase-Out Threshold:** The allowance is reduced to $0 when MAGI reaches **$150,000**. Once MAGI exceeds $150,000, 100% of rental losses must be suspended and carried forward.
 
 #### Loss Suspension & Form 8582
 - All passive rental losses must be suspended and carried forward to the subsequent tax year.
@@ -63,7 +60,7 @@ If the property is rented as a short-term rental rather than a long-term residen
 - **Tax Benefit:** If they meet both requirements, the rental loss is classified as **active/non-passive**, allowing them to deduct the entire loss (including MACRS depreciation) against W-2 wages in the current tax year, bypassing the passive loss suspension rules.
 
 ### Strategy B: Real Estate Professional Status (REPS) Spouse Strategy (IRC § 469(c)(7))
-While Spouse 1 has a full-time W-2 job ($480k income) and cannot meet the REPS tests, Spouse 2 can qualify if they do not work full-time outside of real estate and meet the following:
+A spouse who does not work full-time outside of real estate can qualify if they meet the following:
 1. **750-Hour Test:** More than 750 hours of services are performed in real property trades or businesses (such as development, construction, acquisition, rental, management, operations, or leasing) during the tax year.
 2. **50% Test:** More than 50% of their total personal services during the tax year are performed in these real property trades or businesses.
 3. **Material Participation:** They must materially participate in each rental activity.

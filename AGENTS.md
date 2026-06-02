@@ -40,7 +40,7 @@ graph TD
   - Extract relevant financial data fields (W-2 Box 1, Box 2, federal/state tax withheld; rental income, rental expenses; side business revenue, side business expenses).
   - **Build a payments ledger** — an array of all tax payments made, each with: `date`, `amount`, `method` (Direct Pay, EFTPS, check, payroll withholding), `confirmation_number` (if available), `jurisdiction` (federal or state abbreviation), and `payment_type` (extension, estimated Q1–Q4, withholding). This replaces a single "amount paid" scalar and enables full reconciliation downstream.
   - Extract extension filing metadata: filing date, form used (4868 federal, state-specific forms), and amounts paid with the extension.
-  - Compile the extracted values into a unified, clean JSON format: `C:\Users\nswitzer\Antigrav Proj\tax_help\processed_data\tax_data_2025.json`.
+  - Compile the extracted values into a unified, clean JSON format at `processed_data/tax_data_2025.json` (path controlled by `TAX_DOCS_DIR` / workspace env vars).
 * **Ollama Model Configuration:**
   - **Model:** `llama3.2-vision` (for OCR and visual PDF parsing) or a local document-extraction pipeline using a high-context model like `llama3.3:70b` (if hardware permits) or `phi3:medium` structured with JSON schema modes.
   - **JSON Mode:** Enabled (`format: "json"` in Ollama API) to guarantee schema compliance.
@@ -50,13 +50,13 @@ graph TD
 * **Role:** Rules-Based Tax Advisor & Planner
 * **Responsibilities:**
   - Evaluate `tax_data_2025.json` against the IRS rules stored in `.agents/skills/`.
-  - Validate high-income thresholds ($480k W-2 income) and enforce the complete phase-out of the $25,000 passive rental loss allowance. Ensure rental depreciation is correctly calculated using MACRS 27.5-year straight-line rules and that land value is excluded.
+  - Validate income against phase-out thresholds and enforce the $25,000 passive rental loss allowance phase-out (IRC § 469). Ensure rental depreciation is correctly calculated using MACRS 27.5-year straight-line rules and that land value is excluded.
   - Apply hobby loss tests (IRC § 183) to side businesses claiming losses. Verify if the business has losses year-over-year (failing 3-out-of-5-year profit test) and suggest restructuring to protect business deductions instead of losing them under hobby classification.
   - Evaluate extension filing timelines (October 15), calculate any potential failure-to-pay/file interest and penalties, and check if tax payments met the 110% safe harbor rule for high-income filers.
   - **Document completeness check:** Before producing the final report, cross-reference all extracted data against expected document types. Flag missing items explicitly (e.g., *"Form 4868 detected but no corresponding payment receipt found — please upload IRS Direct Pay or EFTPS confirmation"*). The report must include a **"Missing / Requested Documents"** section listing any gaps.
   - **Payment reconciliation:** Sum all entries in the payments ledger (withholding + estimated + extension payments) and compare against estimated total tax liability. Report the **total paid**, **estimated remaining balance**, and any **accrued interest or penalties** on the unpaid portion from the extension date through the current date.
   - **State extension handling:** If state extension vouchers or state payment receipts are present, evaluate state-specific filing deadlines, payment requirements, and any state-level penalties or interest separately from federal. If no state extension docs are found but W-2s show state withholding, flag this as a potential gap.
-  - Generate a detailed markdown tax prep report in `C:\Users\nswitzer\Antigrav Proj\tax_help\final_outputs\tax_prep_report.md`.
+  - Generate a detailed markdown tax prep report at `final_outputs/tax_prep_report.md`.
 * **Ollama Model Configuration (Fine-tuned / Specialized LLM):**
   - **Model:** Local custom model `tax-prep-gemma2` (A fine-tuned or heavily prompt-engineered model built on Gemma 2, specialized on Title 26 of the United States Code [IRC] and IRS publications).
   - **Modelfile Configuration:** Uses a custom system message loading rules dynamically and pre-loading tax code contexts.
