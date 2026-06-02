@@ -43,7 +43,7 @@ ollama create tax-prep-gemma2 -f .agents/Modelfile.taxprep
 ```
 
 > [!TIP]
-> **Model Fine-Tuning Option:** Use the [`fine_tune_unsloth.py`](file:///C:/Users/nswitzer/Antigrav%20Proj/tax_help/fine_tune_unsloth.py) script on Kaggle to fine-tune Gemma 2. The script will automatically run an in-memory accuracy evaluation suite right after training to verify performance. If you add your Hugging Face API key as a Kaggle secret named `HF_TOKEN`, it will then quantize, convert, and push the GGUF model directly to [nswitzer/gemma2-9b-tax-prep-GGUF](https://huggingface.co/nswitzer/gemma2-9b-tax-prep-GGUF) so you can download and use it immediately locally.
+> **Model Fine-Tuning Option:** Use the `fine_tune_unsloth.py` script on Kaggle to fine-tune Gemma 2. The script will automatically run an in-memory accuracy evaluation suite right after training to verify performance. If you add your Hugging Face API key as a Kaggle secret named `HF_TOKEN`, it will then quantize, convert, and push the GGUF model directly to [nswitzer/gemma2-9b-tax-prep-GGUF](https://huggingface.co/nswitzer/gemma2-9b-tax-prep-GGUF) so you can download and use it immediately locally.
 
 ---
 
@@ -59,13 +59,19 @@ Place your raw tax files in the `raw_docs/` directory:
 - Form 4868 (extension request confirmation)
 
 ### 2. Execution Flow
+
+Point the pipeline at your tax docs folder (outside the repo):
+```bash
+export TAX_DOCS_DIR="/path/to/your/tax/docs"
+```
+
 To run the mesh using defaults:
-```cmd
+```bash
 uv run orchestrator.py
 ```
 
-To run with a specific basic Gemma model (e.g., if you have `gemma4:e2b` or `gemma4:e4b` installed and want to run it first):
-```cmd
+To run with a specific Gemma model:
+```bash
 uv run orchestrator.py --model gemma4:e2b
 ```
 

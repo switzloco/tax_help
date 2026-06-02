@@ -51,7 +51,7 @@ app = FastAPI(title="Local Tax Swarm Web Dashboard")
 
 # Paths
 WORKSPACE_DIR = Path(__file__).parent.resolve()
-RAW_DOCS_DIR = Path(os.environ.get("TAX_DOCS_DIR", r"C:\Users\nswitzer\Antigrav Proj\Tax Docs"))
+RAW_DOCS_DIR = Path(os.environ.get("TAX_DOCS_DIR", str(WORKSPACE_DIR / "raw_docs")))
 PROCESSED_DATA_DIR = WORKSPACE_DIR / "processed_data"
 FINAL_OUTPUTS_DIR = WORKSPACE_DIR / "final_outputs"
 FILLED_FORMS_DIR = FINAL_OUTPUTS_DIR / "filled_forms"
@@ -144,11 +144,10 @@ def get_status():
 
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
-    # Block forbidden paths or files (just general safety check)
     filename = file.filename
-    if any(forbidden in filename for forbidden in ["OneDrive", "Stryker"]):
-        raise HTTPException(status_code=400, detail="Invalid file name or path.")
-        
+    if not filename or ".." in filename or "/" in filename or "\\" in filename:
+        raise HTTPException(status_code=400, detail="Invalid file name.")
+
     destination = RAW_DOCS_DIR / filename
     try:
         with open(destination, "wb") as buffer:
@@ -164,20 +163,7 @@ def update_config(payload: ConfigPayload):
     if not path_str:
         raise HTTPException(status_code=400, detail="Path cannot be empty.")
     
-    # Enforce security boundaries and strict directory lock
     path = Path(path_str).resolve()
-    allowed_root = Path(r"C:\Users\nswitzer\Antigrav Proj").resolve()
-    try:
-        path.relative_to(allowed_root)
-    except ValueError:
-        raise HTTPException(
-            status_code=400, 
-            detail="Access denied. Path must be inside C:\\Users\\nswitzer\\Antigrav Proj"
-        )
-        
-    if any(forbidden in path_str for forbidden in ["OneDrive", "Stryker"]):
-        raise HTTPException(status_code=400, detail="Access denied. Path contains restricted folder names.")
-        
     try:
         path.mkdir(parents=True, exist_ok=True)
         RAW_DOCS_DIR = path
@@ -232,10 +218,7 @@ def run_orchestrator_sync(mode: str = "standard", runs: int = 5):
     state.running = True
     state.logs = ["[System] Starting Tax Swarm Orchestration...\n"]
     
-    # Locate UV binary
-    uv_binary = r"C:\Users\nswitzer\.local\bin\uv.exe"
-    if not os.path.exists(uv_binary):
-        uv_binary = "uv"  # fallback to PATH
+    uv_binary = "uv"
         
     # Stage 1 & 2: Run standard orchestrator to extract documents
     state.logs.append("[System] Stage 1: Running document intake and extraction...\n")

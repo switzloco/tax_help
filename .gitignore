@@ -7,6 +7,14 @@
 *.jpg
 *.json
 
+# Bouncer artifacts — must never be committed
+/processed_data/rehydration_map.json
+/processed_data/sanitized_bundle.json
+/config/known_entities.json
+
+# Allow template / example config files
+!/**/*.example.json
+
 # Allow agents directory and markdown files
 !/.agents/
 !/**/*.md

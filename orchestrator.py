@@ -108,7 +108,20 @@ def run_tax_loop(docs_dir: Path, models: dict):
                 json.dump(state.get("extracted", {}), f, indent=2)
         except Exception as e:
             print(f"Warning: Could not save tax_data_2025.json: {e}")
-            
+
+        # ── Bouncer: build PII-free bundle for cloud hand-off ──────────────
+        try:
+            from shared.cloud_bundle import build_bundle, CloudBundleError
+            bundle_path = build_bundle(state)
+            state["meta"]["sanitized_bundle_path"] = str(bundle_path)
+        except CloudBundleError as e:
+            print(f"\n[BOUNCER FAIL] {e}")
+            print("Pipeline halted. Fix redaction issues before continuing.")
+            raise
+        except Exception as e:
+            print(f"[Bouncer] Warning: bundle build skipped ({e})")
+        # ────────────────────────────────────────────────────────────────────
+
         run_strategist(state, SKILLS_DIR, model=models["auditor"])
         run_form_proxy(state)
         run_qa(state, model=models["auditor"])
@@ -138,7 +151,7 @@ def main(args_list=None):
     parser.add_argument("--audit-model", type=str, default="gemma4:latest", help="Model override for Tax Prep Agent (default: gemma4:latest)")
     args = parser.parse_args(args_list)
     
-    raw_docs_dir = Path(args.docs_dir) if args.docs_dir else Path(os.environ.get("TAX_DOCS_DIR", r"C:\Users\nswitzer\Antigrav Proj\tax_help\raw_docs"))
+    raw_docs_dir = Path(args.docs_dir) if args.docs_dir else Path(os.environ.get("TAX_DOCS_DIR", str(WORKSPACE_DIR / "raw_docs")))
     
     from shared.ollama_client import resolve_model
     models = {
