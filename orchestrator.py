@@ -108,7 +108,20 @@ def run_tax_loop(docs_dir: Path, models: dict):
                 json.dump(state.get("extracted", {}), f, indent=2)
         except Exception as e:
             print(f"Warning: Could not save tax_data_2025.json: {e}")
-            
+
+        # ── Bouncer: build PII-free bundle for cloud hand-off ──────────────
+        try:
+            from shared.cloud_bundle import build_bundle, CloudBundleError
+            bundle_path = build_bundle(state)
+            state["meta"]["sanitized_bundle_path"] = str(bundle_path)
+        except CloudBundleError as e:
+            print(f"\n[BOUNCER FAIL] {e}")
+            print("Pipeline halted. Fix redaction issues before continuing.")
+            raise
+        except Exception as e:
+            print(f"[Bouncer] Warning: bundle build skipped ({e})")
+        # ────────────────────────────────────────────────────────────────────
+
         run_strategist(state, SKILLS_DIR, model=models["auditor"])
         run_form_proxy(state)
         run_qa(state, model=models["auditor"])
