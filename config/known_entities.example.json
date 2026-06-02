@@ -1,0 +1,22 @@
+{
+  "_comment": "Copy this file to config/known_entities.json and fill in real values. known_entities.json is gitignored and never committed.",
+  "persons": [
+    "Primary Taxpayer Full Name",
+    "Spouse Full Name",
+    "Dependent One Full Name",
+    "Dependent Two Full Name",
+    "Dependent Three Full Name"
+  ],
+  "employers": [
+    "Employer Name 1",
+    "Employer Name 2"
+  ],
+  "businesses": [
+    "Side Business Name"
+  ],
+  "addresses": {
+    "street": "Street Address",
+    "city": "City Name",
+    "zip": "ZIP Code"
+  }
+}
